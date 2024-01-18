@@ -8,6 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        oswald: ['var(--font-oswald)'],
+        quicksand: ['var(--font-quicksand)'],
+        dmsans: ['var(--font-dmsans)']
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
