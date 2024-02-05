@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Oswald, Quicksand, DM_Sans } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/organisms/header'
+import SessionAuthProvider from '@/context/SessionAuthProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,8 +31,10 @@ export default function RootLayout({
       <body
         className={`${inter.className} ${oswald.variable} ${quicksand.variable} ${dmsans.variable} `}
       >
-        <Header />
-        {children}
+        <SessionAuthProvider>
+          <Header />
+          {children}
+        </SessionAuthProvider>
       </body>
     </html>
   )
