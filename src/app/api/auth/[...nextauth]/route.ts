@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 
 const handler = NextAuth({
   providers: [
@@ -19,6 +20,7 @@ const handler = NextAuth({
         },
         password: { label: 'Password', type: 'password' }
       },
+
       async authorize(credentials, req) {
         // se debe retornar o un error o un null o el user
 
@@ -40,6 +42,10 @@ const handler = NextAuth({
 
         return user.data
       }
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET
     })
   ],
   callbacks: {
@@ -49,7 +55,20 @@ const handler = NextAuth({
     async session({ session, token }) {
       session.user = token as any
       return session
+    },
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        const { id, name, email, image } = user
+        // check user exists
+
+        // if dont exists create
+      }
+
+      return true
     }
+  },
+  pages: {
+    signIn: '/login'
   }
 })
 

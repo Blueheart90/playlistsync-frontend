@@ -1,5 +1,8 @@
 'use client'
-import MyInput from '@/components/atoms/myInput'
+
+import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import MyButton from '@/components/atoms/myButton'
 import GoogleButton from '@/components/molecules/googleButton'
 import { Formik, Field, Form, ErrorMessage } from 'formik'
@@ -11,9 +14,25 @@ interface Values {
   password: string
 }
 export default function Page() {
+  const [errors, setErrors] = useState<string[]>([])
   const initialValues: Values = { email: '', password: '' }
+  const router = useRouter()
   const handleSubmit = async (values: Values) => {
+    const { email, password } = values
+
     console.log(values)
+    const responseNextAuth = await signIn('credentials', {
+      email,
+      password,
+      redirect: false
+    })
+
+    console.log(responseNextAuth)
+    if (responseNextAuth?.error) {
+      setErrors(responseNextAuth.error.split(','))
+      return
+    }
+    router.push('/dashboard')
   }
   return (
     <div className="max-w-sm p-8 bg-white">
@@ -39,6 +58,15 @@ export default function Page() {
             label="Contraseña"
             className="border px-3 py-2 my-2 text-sm w-full text-gray-600"
           />
+          {errors.length > 0 && (
+            <div className="alert alert-danger mt-2">
+              <ul className="mb-0">
+                {errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <MyButton type="submit">Login</MyButton>
           <GoogleButton />
         </Form>
