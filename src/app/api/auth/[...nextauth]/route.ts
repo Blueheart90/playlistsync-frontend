@@ -1,7 +1,9 @@
+import { prisma } from '../../../../../services/prisma'
 import NextAuth from 'next-auth'
-
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
+import { checkUser } from '@@/utils/checkUser'
+import { encrypPassword, comparePassword } from '@@/utils/hashPassword'
 
 const handler = NextAuth({
   providers: [
@@ -24,23 +26,50 @@ const handler = NextAuth({
       async authorize(credentials, req) {
         // se debe retornar o un error o un null o el user
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              email: credentials?.email,
-              password: credentials?.password
-            }),
-            headers: { 'Content-Type': 'application/json' }
+        // const res = await fetch(
+        //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`,
+        //   {
+        //     method: 'POST',
+        //     body: JSON.stringify({
+        //       email: credentials?.email,
+        //       password: credentials?.password
+        //     }),
+        //     headers: { 'Content-Type': 'application/json' }
+        //   }
+        // )
+        // const user = await res.json()
+        // console.log({ user })
+
+        // if (user.status === 'error') throw user
+
+        // return user.data
+
+        if (!credentials?.email || !credentials.password) {
+          return null
+        }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email
           }
-        )
-        const user = await res.json()
-        console.log({ user })
+        })
 
-        if (user.status === 'error') throw user
+        if (!user) {
+          return null
+        }
 
-        return user.data
+        const isPasswordValid = await checkUser(user, credentials.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.photo
+        }
       }
     }),
     GoogleProvider({
@@ -59,12 +88,43 @@ const handler = NextAuth({
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google') {
         const { id, name, email, image } = user
-        // check user exists
 
-        // if dont exists create
+        let userT
+        let providerT
+
+        await prisma.$transaction(async (tx) => {
+          userT = await tx.user.upsert({
+            where: { email },
+            update: {
+              name,
+              photo: image
+            },
+            create: {
+              email: 'chuchober16@gmail.com',
+              name: 'Test User 33 trans',
+              photo: 'test.jpg'
+            }
+          })
+
+          providerT = await tx.provider.upsert({
+            where: {
+              userProvider: {
+                name: account.provider.toUpperCase(),
+                userId: userT.id
+              }
+            },
+            update: {},
+            create: {
+              name: account.provider.toUpperCase(),
+              providerAccountId: account.providerAccountId,
+              userId: userT.id
+            }
+          })
+        })
+        console.log({ providerT })
       }
 
-      return true
+      return false
     }
   },
   pages: {

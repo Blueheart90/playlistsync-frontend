@@ -7,8 +7,8 @@ const Dashboard = () => {
   if (status === 'loading') {
     return <p>Loading...</p>
   }
-  console.log(session)
-  console.log(session?.user?.accessToken)
+  // console.log(session)
+  // console.log(session?.user?.accessToken)
 
   const getCats = async () => {
     const res = await fetch(

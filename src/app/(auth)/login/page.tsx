@@ -7,7 +7,7 @@ import MyButton from '@/components/atoms/myButton'
 import GoogleButton from '@/components/molecules/googleButton'
 import { Formik, Field, Form, ErrorMessage } from 'formik'
 import FieldCustom from '../../../components/atoms/fieldCustom'
-import { LoginSchema } from '@/utils/authFormSchema'
+import { LoginSchema } from '@@/utils/authFormSchema'
 
 interface Values {
   email: string

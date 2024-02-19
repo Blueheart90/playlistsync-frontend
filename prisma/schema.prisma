@@ -10,18 +10,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProviderName {
+  GOOGLE
+  SPOTIFY
+}
+
 model User {
   id            String         @id @unique @default(uuid())
   name          String         @db.VarChar(255)
   email         String         @unique
   photo         String?        @default("default.png")
-  password      String
+  password      String?
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-
+  providers     Provider[]
   @@map(name: "users")
 }
+
+model Provider {
+  id            String         @id @unique @default(uuid())
+  name          ProviderName        
+  providerAccountId          String         @db.VarChar(255)
+  
+  userId        String         
+  user          User           @relation(fields: [userId], references: [id])
+
+  @@unique(fields: [userId, name], name: "userProvider")
+  @@map(name: "providers")
+}
+
+
 
 model RefreshToken {
   id          String   @id @unique @default(uuid())
