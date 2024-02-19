@@ -100,9 +100,9 @@ const handler = NextAuth({
               photo: image
             },
             create: {
-              email: 'chuchober16@gmail.com',
-              name: 'Test User 33 trans',
-              photo: 'test.jpg'
+              email,
+              name,
+              photo: image
             }
           })
 
